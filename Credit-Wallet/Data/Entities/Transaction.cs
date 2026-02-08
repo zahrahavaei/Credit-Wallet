@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Credit_Wallet.Data.Entities;
 
@@ -10,6 +11,7 @@ public class Transaction
     public Wallet? Wallet { get; set; }
     public decimal Amount { get; set; }
     public TransactionType TransactionType { get; set; }
+    [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public DateTime CreatedDateTime { get; set; }
 }
 
