@@ -10,4 +10,7 @@ public class Wallet
     public string UserId { get; set; }
     public decimal Balance { get; set; }
     public DateTime LastUpdateDateTime { get; set; } = DateTime.Now;
+
+    [Timestamp]
+    public byte[] RowVersion { get; set; }
 }
