@@ -1,21 +1,26 @@
 ﻿using Credit_Wallet.Data;
 using Credit_Wallet.Data.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
+
 
 namespace Credit_Wallet.Features.AddCreditToWallet
 {
     public class AddCreditToWalletHandler
     {
         private readonly ApplicationDbContext _dbcontext;
-        public AddCreditToWalletHandler(ApplicationDbContext context)
+        private readonly AddCreditToWalletValidator _validator;
+        private readonly ILogger<AddCreditToWalletHandler> _logger;
+        public AddCreditToWalletHandler(ApplicationDbContext context,
+                                        AddCreditToWalletValidator validator,
+                                        ILogger<AddCreditToWalletHandler> logger)
         {
             _dbcontext = context;
+            _validator = validator;
+            _logger = logger;
         }
         public async Task<AddCredittoWalletResponse> HandleAsync(AddCreditToWalletRequest request)
         {
-            var validator = new AddCreditToWalletValidator();
-            if (!validator.Validate(request))
+            if (!_validator.Validate(request))
             {
                  return new AddCredittoWalletResponse
                 {
@@ -35,39 +40,56 @@ namespace Credit_Wallet.Features.AddCreditToWallet
                     
                 };
             }
-            using var transaction=await _dbcontext.Database.BeginTransactionAsync();
-            try
+            var maxAttempt = 3;
+            for(var attempt = 0; attempt < maxAttempt;attempt++)
             {
-                var walletTransaction = new Transaction
+                try
                 {
-                    WalletId = wallet.Id,
-                    Amount = request.Amount,
-                    TransactionType = TransactionType.Deposit,
-                    CreatedDateTime = DateTime.Now
-                };
-                await _dbcontext.Transactions.AddAsync(walletTransaction);
-            
-                wallet.Balance += request.Amount;
-                await _dbcontext.SaveChangesAsync();
-                await transaction.CommitAsync();
-                return new AddCredittoWalletResponse
+                    using var transaction = await _dbcontext.Database.BeginTransactionAsync();
+                   _dbcontext.Transactions.RemoveRange(
+                          _dbcontext.Transactions.Local.Where(t=>t.WalletId == wallet.Id &&
+                                                               t.TransactionType== TransactionType.Deposit));
+                    var walletTransaction = new Transaction
+                    {
+                        WalletId = wallet.Id,
+                        Amount = request.Amount,
+                        TransactionType = TransactionType.Deposit,
+                        CreatedDateTime = DateTime.Now
+                    };
+                    await _dbcontext.Transactions.AddAsync(walletTransaction);
+                    wallet.Balance += request.Amount;
+                    await _dbcontext.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return new AddCredittoWalletResponse
+                    {
+                        Success = true,
+                        Message = "Credit added successfully",
+                        NewBalance = wallet.Balance
+                    };
+                }
+                catch(DbUpdateConcurrencyException exception)
                 {
-                    Success = true,
-                    Message = "Credit added successfully",
-                    NewBalance = wallet.Balance
-                };
+                    _logger.LogWarning("Concurrency conflict detected while adding credit to wallet for user {UserId}. Attempt {Attempt} of {MaxAttempt}. Exception: {ExceptionMessage}", request.UserId, attempt + 1, maxAttempt, exception.Message);
+                    if (attempt == maxAttempt - 1)
+                    {
+                        return new AddCredittoWalletResponse
+                        {
+                            Success = false,
+                            Message = "Failed to add credit to the wallet due to concurrent updates. Please try again later.",
+                            
+                        };
+                    }
+                   await _dbcontext.Entry(wallet).ReloadAsync();
+                  
+                }
+              
             }
-            catch(Exception ex)
-            {
-                await transaction.RollbackAsync();
                 return new AddCredittoWalletResponse
                 {
                     Success = false,
-                    Message = "An error occurred while adding credit to the wallet: " + ex.Message,
+                    Message = "Failed to add credit to the wallet after multiple attempts. Please try again later.",
                     
                 };
-            }
-           
         }
     }
 }
