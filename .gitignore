@@ -21,3 +21,8 @@ obj/
 *.vs/
 *.vscode/
 Debug/
+**/bin/
+**/obj/
+.vs/
+.vscode/
+Debug/
