@@ -54,7 +54,8 @@ namespace Credit_Wallet.Features.AddCreditToWallet
                         WalletId = wallet.Id,
                         Amount = request.Amount,
                         TransactionType = TransactionType.Deposit,
-                        CreatedDateTime = DateTime.Now
+                        CreatedDateTime = DateTime.Now//can I remove as
+                                                      //[DatabaseGenerated(DatabaseGeneratedOption.Identity)] is used in Transaction entity
                     };
                     await _dbcontext.Transactions.AddAsync(walletTransaction);
                     wallet.Balance += request.Amount;
