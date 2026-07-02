@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
+﻿
 namespace Credit_Wallet.Features.GetuserWallet
 {
     public class GetUseWalletRequest

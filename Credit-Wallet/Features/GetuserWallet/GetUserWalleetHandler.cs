@@ -20,9 +20,10 @@ namespace Credit_Wallet.Features.GetuserWallet
                                                   (w => w.UserId == userId);
             if (wallet == null)
             {
-                return null;
                 _logger.LogWarning("Wallet not found for userId: {UserId}", userId);
 
+                return null;
+               
             }
             return new GetUserWalletResponse
             {
