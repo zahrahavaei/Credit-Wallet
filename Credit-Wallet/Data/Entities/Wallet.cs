@@ -12,5 +12,8 @@ public class Wallet
     public decimal Balance { get; set; }
 
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-    public DateTime LastUpdateDateTime { get; set; } 
+    public DateTime LastUpdateDateTime { get; set; }
+
+    [Timestamp]
+    public byte[] RowVersion { get; set; }
 }
