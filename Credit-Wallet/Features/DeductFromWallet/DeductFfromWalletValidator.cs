@@ -1,6 +1,6 @@
 ﻿namespace Credit_Wallet.Features.DeductFromWallet
 {
-    public class DeductFfromWalletValidator
+    public class DeductFromWalletValidator
     {
         public bool Validate(DeductFromWalletRequest request)
         {

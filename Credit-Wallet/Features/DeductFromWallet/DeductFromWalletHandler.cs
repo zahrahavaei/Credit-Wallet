@@ -1,6 +1,10 @@
-﻿using Credit_Wallet.Data;
+﻿using Azure.Core;
 using Credit_Wallet.Data.Entities;
+using Credit_Wallet.Exceptions;
+using Credit_Wallet.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+
 
 
 namespace Credit_Wallet.Features.DeductFromWallet
@@ -8,17 +12,37 @@ namespace Credit_Wallet.Features.DeductFromWallet
     public class DeductFromWalletHandler
     {
         private readonly ILogger<DeductFromWalletHandler> _logger;
-        private readonly ApplicationDbContext _dbContext;
-        private readonly DeductFfromWalletValidator _validator;
+        private readonly DeductFromWalletValidator _validator;
+        private readonly IServiceScopeFactory _scopeFactory;
+
 
         public DeductFromWalletHandler(
             ILogger<DeductFromWalletHandler> logger,
-            ApplicationDbContext dbContext,
-            DeductFfromWalletValidator validator)
+            DeductFromWalletValidator validator,
+            IServiceScopeFactory scopFactory
+          )
         {
             _logger = logger;
-            _dbContext = dbContext;
             _validator = validator;
+            _scopeFactory = scopFactory;
+        }
+        private async Task PerformDeductionAsync(Wallet wallet,
+                                                 decimal amount,
+                                                 ITransactionRepository transactionRepository,
+                                                 IUnitOfWork unitOfWork)
+        {
+            await transactionRepository.AddTransactionAsync(new Transaction
+            {
+                WalletId = wallet.Id,
+                Amount = -amount,
+                TransactionType = TransactionType.Withdraw,
+                CreatedDateTime = DateTime.Now
+            });
+
+            wallet.Balance -= amount;
+            wallet.LastUpdateDateTime = DateTime.Now;
+
+           await unitOfWork.SaveChangesAsync();
         }
 
         public async Task<DeductFromWalletResponse> HandleAsync(DeductFromWalletRequest request)
@@ -31,51 +55,38 @@ namespace Credit_Wallet.Features.DeductFromWallet
                     Message = "Validation failed",
                 };
             }
-            var wallet = await _dbContext.Wallets
-                .FirstOrDefaultAsync(w => w.UserId == request.UserId);
-
-            if (wallet == null)
-            {
-                return new DeductFromWalletResponse
-                {
-                    Success = false,
-                    Message = "Wallet not found",
-                };
-            }
-
-            if (wallet.Balance < request.Amount)
-            {
-                return new DeductFromWalletResponse
-                {
-                    Success = false,
-                    Message = "Insufficient funds",
-                };
-            }
-            int maxRetry = 3;
-
-            for (int attempt = 0; attempt < maxRetry; attempt++)
+            const int maxAttempt = 2;
+            for (var attempt = 1; attempt <= maxAttempt; attempt++)
             {
                 try
                 {
-                    using var transaction = await _dbContext.Database.BeginTransactionAsync();
+                using var scope = _scopeFactory.CreateScope();
+                var transactionRepository = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
+                var walletRepository = scope.ServiceProvider.GetRequiredService<IWalletRepository>();
+                var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-                    _dbContext.Transactions.RemoveRange(
-                        _dbContext.Transactions.Local
-                        .Where(t => t.WalletId == wallet.Id && t.TransactionType == TransactionType.Withdraw));
+                var wallet = await walletRepository.GetWalletByUserIdAsync(request.UserId);
 
-                    await _dbContext.Transactions.AddAsync(new Transaction
+                if (wallet == null)
+                {
+                    return new DeductFromWalletResponse
                     {
-                        WalletId = wallet.Id,
-                        Amount = -request.Amount,
-                        TransactionType = TransactionType.Withdraw,
-                        CreatedDateTime = DateTime.Now
-                    });
-
-                    wallet.Balance -= request.Amount;
-                    wallet.LastUpdateDateTime = DateTime.Now;
-
-                    await _dbContext.SaveChangesAsync();
-                    await transaction.CommitAsync();
+                        Success = false,
+                        Message = "Wallet not found",
+                    };
+                }
+                if (wallet.Balance < request.Amount)
+                {
+                    return new DeductFromWalletResponse
+                    { 
+                        Success = false,
+                        Message = "Insufficient funds",
+                    };
+                }
+                    await PerformDeductionAsync(wallet,
+                                                request.Amount,
+                                                transactionRepository,
+                                                unitOfWork);
 
                     return new DeductFromWalletResponse
                     {
@@ -83,28 +94,30 @@ namespace Credit_Wallet.Features.DeductFromWallet
                         Message = "Amount deducted successfully",
                         NewBalance = wallet.Balance
                     };
-                }
-                catch (DbUpdateConcurrencyException ex) 
-                {
-                    _logger.LogWarning(ex, "Concurrency conflict for UserId: {UserId}, attempt {Attempt}", request.UserId, attempt + 1);
 
-                    if (attempt == maxRetry - 1)
+                }
+                catch (WalletConcurrencyException ex)
+                {
+                    _logger.LogWarning(ex, "The Wallet Is Modified By Another Request,{UserId}", request.UserId);
+                    if (attempt == maxAttempt)
                     {
+                        _logger.LogError("Failed to deduct amount for UserId: {UserId} after 2 attempts due to concurrency issues.", request.UserId);
                         return new DeductFromWalletResponse
                         {
                             Success = false,
-                            Message = "Concurrency conflict occurred. Please try again.",
+                            Message = "Failed to deduct amount . Please try again.",
                         };
+                        // await _walletRepository.ReloadWalletAsync(wallet);
                     }
-                    await _dbContext.Entry(wallet).ReloadAsync();
-                    if (wallet.Balance < request.Amount)
-                    {
+                }
+                catch(DatabaseException ex)
+                {
+                        _logger.LogError(ex, "Database update error while deducting amount for UserId: {UserId}", request.UserId);
                         return new DeductFromWalletResponse
                         {
                             Success = false,
-                            Message = "Insufficient funds after retry",
+                            Message = "Failed to deduct amount . Please try again.",
                         };
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -121,6 +134,7 @@ namespace Credit_Wallet.Features.DeductFromWallet
                 Success = false,
                 Message = "Unable to process request.",
             };
+        
         }
-    }
-}    
+    }   
+}
