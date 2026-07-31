@@ -11,8 +11,8 @@ public class Transaction
     public Wallet? Wallet { get; set; }
     public decimal Amount { get; set; }
     public TransactionType TransactionType { get; set; }
-    [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-    public DateTime CreatedDateTime { get; set; }
+   
+    public DateTime CreatedDateTime { get; set; }= DateTime.UtcNow;
 }
 
 public enum TransactionType
