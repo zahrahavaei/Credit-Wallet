@@ -29,7 +29,7 @@ public class MakeWalletService : IMakeWalletService
         {
             UserId = Guid.NewGuid().ToString(),
             Balance = 0,
-            LastUpdateDateTime = DateTime.Now
+            LastUpdateDateTime = DateTime.UtcNow
         };
         return newWallet;
     }
