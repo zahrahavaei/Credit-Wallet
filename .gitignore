@@ -18,25 +18,21 @@
 # HTTP Client requests
 /httpRequests/
 
-
 # Visual Studio / .NET
 .vs/
+.vscode/
 bin/
 obj/
-*.user
-*.suo
-.vscode/
 Debug/
 
 # Ignore build folders anywhere
 **/bin/
 **/obj/
 
-bin/
-obj/
-.vs/
+# User-specific files
 *.user
 *.suo
+
+# Build outputs
 *.exe
 *.dll
-

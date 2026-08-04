@@ -5,8 +5,15 @@ using Credit_Wallet.Features.AddCreditToWallet;
 using Credit_Wallet.Features.DeductFromWallet;
 
 using Credit_Wallet.Features.MakeWallet;
+
+using Credit_Wallet.Features.GetuserWallet;
+
 using Credit_Wallet.Repositories;
+
+using Credit_Wallet.Data.Entities;
+
 using Microsoft.EntityFrameworkCore;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +34,8 @@ builder.Services.AddScoped<DeductFromWalletHandler>();
 builder.Services.AddScoped<IWalletRepository, WalletRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<GetUserWalletHandler>();
+
 
 var app = builder.Build();
 
