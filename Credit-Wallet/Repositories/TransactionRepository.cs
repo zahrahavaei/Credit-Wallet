@@ -13,7 +13,6 @@ namespace Credit_Wallet.Repositories
         public async Task AddTransactionAsync(Transaction transaction)
         {
             await _dbContext.Transactions.AddAsync(transaction);
-
         }
     }
 }

@@ -4,16 +4,25 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Credit_Wallet.Repositories
 {
-    public class WalletRepository:IWalletRepository
+
+    public class WalletRepository : IWalletRepository
     {
-        private readonly ApplicationDbContext _dbcontext;
-        public WalletRepository(ApplicationDbContext dbContext) 
+        private readonly ApplicationDbContext _dbContext;
+        public WalletRepository(ApplicationDbContext dbContext)
         {
-            _dbcontext = dbContext;
+            _dbContext = dbContext;
         }
+
         public async Task<Wallet?> GetWalletByUserIdAsync(string userId)
         {
-            return await _dbcontext.Wallets.FirstOrDefaultAsync(w=>w.UserId == userId);
+            return await _dbContext.Wallets
+                                         .FirstOrDefaultAsync(w => w.UserId == userId);
+           
+        }
+        public async Task ReloadWalletAsync(Wallet wallet)
+        {
+            await _dbContext.Entry(wallet).ReloadAsync();
         }
     }
 }
+

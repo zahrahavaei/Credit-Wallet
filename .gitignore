@@ -18,6 +18,7 @@
 # HTTP Client requests
 /httpRequests/
 
+
 # Visual Studio / .NET
 .vs/
 bin/
@@ -30,3 +31,12 @@ Debug/
 # Ignore build folders anywhere
 **/bin/
 **/obj/
+
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.exe
+*.dll
+
