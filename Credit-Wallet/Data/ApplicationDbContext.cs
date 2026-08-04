@@ -19,10 +19,16 @@ public class ApplicationDbContext : DbContext
             .Property(w => w.Balance)
             .HasPrecision(18, 2);
 
+        modelBuilder.Entity<Wallet>()
+            .Property(w=>w.LastUpdateDateTime)
+            .ValueGeneratedOnAddOrUpdate()
+            .HasDefaultValueSql("GETDATE()");
+
         modelBuilder.Entity<Transaction>()
             .Property(t => t.Amount)
             .HasPrecision(18, 2);
         
+
         base.OnModelCreating(modelBuilder);
     }
 }

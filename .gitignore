@@ -1,20 +1,32 @@
 # Default ignored files
 /shelf/
 /workspace.xml
+
 # Rider ignored files
 /modules.xml
 /projectSettingsUpdater.xml
 /.idea.Credit-Wallet.wiki.iml
 /contentModel.xml
-# Ignored default folder with query files
+
+# Query files
 /queries/
-# Datasource local storage ignored files
+
+# Datasource local storage
 /dataSources/
 /dataSources.local.xml
-# Editor-based HTTP Client requests
+
+# HTTP Client requests
 /httpRequests/
-# Visual Studio files
+
+# Visual Studio / .NET
 .vs/
 bin/
 obj/
 *.user
+*.suo
+.vscode/
+Debug/
+
+# Ignore build folders anywhere
+**/bin/
+**/obj/
