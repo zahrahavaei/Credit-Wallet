@@ -13,6 +13,7 @@ using Credit_Wallet.Repositories;
 using Credit_Wallet.Data.Entities;
 
 using Microsoft.EntityFrameworkCore;
+using Credit_Wallet.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,6 +36,7 @@ builder.Services.AddScoped<IWalletRepository, WalletRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<GetUserWalletHandler>();
+builder.Services.AddScoped<HmacService>();
 
 
 var app = builder.Build();

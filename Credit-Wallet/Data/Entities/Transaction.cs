@@ -13,6 +13,7 @@ public class Transaction
     public TransactionType TransactionType { get; set; }
    
     public DateTime CreatedDateTime { get; set; }= DateTime.UtcNow;
+    public string TransactionHash { get; set; }= string.Empty;
 }
 
 public enum TransactionType

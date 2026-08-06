@@ -2,6 +2,7 @@
 using Credit_Wallet.Data.Entities;
 using Credit_Wallet.Exceptions;
 using Credit_Wallet.Repositories;
+using Credit_Wallet.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -14,29 +15,35 @@ namespace Credit_Wallet.Features.DeductFromWallet
         private readonly ILogger<DeductFromWalletHandler> _logger;
         private readonly DeductFromWalletValidator _validator;
         private readonly IServiceScopeFactory _scopeFactory;
-
+        private readonly HmacService _hmacService;
 
         public DeductFromWalletHandler(
             ILogger<DeductFromWalletHandler> logger,
             DeductFromWalletValidator validator,
-            IServiceScopeFactory scopFactory
-          )
+            IServiceScopeFactory scopFactory,
+            HmacService hmacService)
+          
         {
             _logger = logger;
             _validator = validator;
             _scopeFactory = scopFactory;
+            _hmacService = hmacService;
         }
         private async Task PerformDeductionAsync(Wallet wallet,
                                                  decimal amount,
                                                  ITransactionRepository transactionRepository,
                                                  IUnitOfWork unitOfWork)
         {
+            var createDate= DateTime.UtcNow;
+            var transactionData = $"{wallet.Id}|{amount}|{TransactionType.Withdraw}|{createDate}";
+            var transactionHash = _hmacService.GenerateHmacHash(transactionData);
             await transactionRepository.AddTransactionAsync(new Transaction
             {
                 WalletId = wallet.Id,
                 Amount = -amount,
                 TransactionType = TransactionType.Withdraw,
-                CreatedDateTime = DateTime.Now
+                CreatedDateTime = createDate,
+                TransactionHash = transactionHash
             });
 
             wallet.Balance -= amount;
