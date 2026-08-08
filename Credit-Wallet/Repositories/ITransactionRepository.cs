@@ -6,5 +6,6 @@ namespace Credit_Wallet.Repositories
     public interface ITransactionRepository
     {
          Task AddTransactionAsync(Transaction transaction);
+        Task <Transaction?>GetTransactionByIdAsync(int id);
     }
 }

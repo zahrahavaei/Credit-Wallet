@@ -17,11 +17,13 @@ public class WalletController : ControllerBase
 
     public WalletController(IMakeWalletService makeWalletService,
                             AddCreditToWalletHandler addCreditToWalletHandler,
-                            DeductFromWalletHandler deductFromWalletHandler)
+                            DeductFromWalletHandler deductFromWalletHandler,
+                            GetUserWalletHandler getUserWalletHandler)
     {
         _makeWalletService = makeWalletService;
         _addCreditToWalletHandler = addCreditToWalletHandler;
         _deductFromWalletHandler = deductFromWalletHandler;
+        _getUserWalletHandler = getUserWalletHandler;
     }
 
     [HttpPost("create")]

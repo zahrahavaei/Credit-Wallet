@@ -11,6 +11,9 @@ public class Wallet
     public string UserId { get; set; }
     public decimal Balance { get; set; }
     public DateTime LastUpdateDateTime { get; set; } = DateTime.UtcNow;
-    [Timestamp]
+    /*[Timestamp]
     public byte[] RowVersion { get; set; }
+    */
+    public Guid RowVersion { get; set; } = Guid.NewGuid();
+    public string WalletHash { get; set; } = string.Empty;
 }

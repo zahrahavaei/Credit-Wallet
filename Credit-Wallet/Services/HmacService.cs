@@ -18,5 +18,13 @@ namespace Credit_Wallet.Services
             var hashBytes=hmac.ComputeHash(Encoding.UTF8.GetBytes(data));
             return Convert.ToBase64String(hashBytes);
         }
+        public bool VerifyHmacHash(string data ,string storedHash)
+        {
+            var computedHash = GenerateHmacHash(data);
+            // return computedHash == storedHash; to prevent timing attacks
+            return CryptographicOperations.FixedTimeEquals( 
+                   Convert.FromBase64String(computedHash),
+                   Convert.FromBase64String(storedHash));
+        }
     }
 }

@@ -3,6 +3,7 @@ using Credit_Wallet.Data.Entities;
 using Credit_Wallet.Exceptions;
 using Credit_Wallet.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Credit_Wallet.Services;
 
 
 namespace Credit_Wallet.Features.AddCreditToWallet
@@ -13,28 +14,36 @@ namespace Credit_Wallet.Features.AddCreditToWallet
         private readonly AddCreditToWalletValidator _validator;
         private readonly ILogger<AddCreditToWalletHandler> _logger;
         private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly HmacService _hmacService;
         public AddCreditToWalletHandler( AddCreditToWalletValidator validator,
                                         ILogger<AddCreditToWalletHandler> logger,
-                                        IServiceScopeFactory serviceScopeFactory)
+                                        IServiceScopeFactory serviceScopeFactory,
+                                        HmacService hmacService)
         {
             _validator = validator;
             _logger = logger;
             _serviceScopeFactory = serviceScopeFactory;
+            _hmacService = hmacService;
         }
         private async Task PerformAddAsync(Wallet wallet,
                                                     decimal amount,
                                                    ITransactionRepository transactionRepository,
                                                    IUnitOfWork unitOfWork)
         {
+            var createDate = DateTime.UtcNow;
+            var transactionData = $"{wallet.Id}|{amount}|{TransactionType.Deposit}|{createDate}";
+            var transactionHash = _hmacService.GenerateHmacHash(transactionData);
             await  transactionRepository.AddTransactionAsync(new Transaction
             {
                 WalletId = wallet.Id,
                 Amount = amount,
                 TransactionType = TransactionType.Deposit,
-                CreatedDateTime = DateTime.UtcNow
+                CreatedDateTime = createDate,
+                TransactionHash = transactionHash
             });
             wallet.Balance += amount;
             wallet.LastUpdateDateTime = DateTime.UtcNow;
+            wallet.RowVersion = Guid.NewGuid();
             await unitOfWork.SaveChangesAsync();
         }
         public async Task<AddCredittoWalletResponse> HandleAsync(AddCreditToWalletRequest request)

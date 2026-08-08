@@ -18,11 +18,9 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Wallet>()
             .Property(w => w.Balance)
             .HasPrecision(18, 2);
-
         modelBuilder.Entity<Wallet>()
-            .Property(w=>w.LastUpdateDateTime)
-            .ValueGeneratedOnAddOrUpdate()
-            .HasDefaultValueSql("GETDATE()");
+            .Property(w => w.RowVersion)
+            .IsConcurrencyToken();
 
         modelBuilder.Entity<Transaction>()
             .Property(t => t.Amount)

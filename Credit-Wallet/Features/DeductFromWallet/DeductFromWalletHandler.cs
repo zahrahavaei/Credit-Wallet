@@ -1,10 +1,10 @@
-﻿using Azure.Core;
+﻿
 using Credit_Wallet.Data.Entities;
 using Credit_Wallet.Exceptions;
 using Credit_Wallet.Repositories;
 using Credit_Wallet.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+
 
 
 
@@ -47,9 +47,9 @@ namespace Credit_Wallet.Features.DeductFromWallet
             });
 
             wallet.Balance -= amount;
-            wallet.LastUpdateDateTime = DateTime.Now;
-
-           await unitOfWork.SaveChangesAsync();
+            wallet.LastUpdateDateTime = DateTime.UtcNow;
+            wallet.RowVersion = Guid.NewGuid();
+            await unitOfWork.SaveChangesAsync();
         }
 
         public async Task<DeductFromWalletResponse> HandleAsync(DeductFromWalletRequest request)
