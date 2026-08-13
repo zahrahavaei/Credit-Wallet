@@ -14,6 +14,7 @@ using Credit_Wallet.Data.Entities;
 
 using Microsoft.EntityFrameworkCore;
 using Credit_Wallet.Services;
+using Credit_Wallet.Features.GetTransaction;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -37,6 +38,9 @@ builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<GetUserWalletHandler>();
 builder.Services.AddScoped<HmacService>();
+builder.Services.AddScoped<WalletIntegrityService>();
+builder.Services.AddScoped<TransactionIntegrityService>();
+builder.Services.AddScoped<GetTransactionHandler>();
 
 
 var app = builder.Build();

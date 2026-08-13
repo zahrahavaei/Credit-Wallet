@@ -16,39 +16,45 @@ namespace Credit_Wallet.Features.DeductFromWallet
         private readonly DeductFromWalletValidator _validator;
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly HmacService _hmacService;
+        private readonly WalletIntegrityService _walletIntegrityService;
+
 
         public DeductFromWalletHandler(
             ILogger<DeductFromWalletHandler> logger,
             DeductFromWalletValidator validator,
             IServiceScopeFactory scopFactory,
-            HmacService hmacService)
+            HmacService hmacService,
+            WalletIntegrityService walletIntegrityService)
           
         {
             _logger = logger;
             _validator = validator;
             _scopeFactory = scopFactory;
             _hmacService = hmacService;
+            _walletIntegrityService = walletIntegrityService;
         }
         private async Task PerformDeductionAsync(Wallet wallet,
                                                  decimal amount,
                                                  ITransactionRepository transactionRepository,
                                                  IUnitOfWork unitOfWork)
         {
-            var createDate= DateTime.UtcNow;
-            var transactionData = $"{wallet.Id}|{amount}|{TransactionType.Withdraw}|{createDate}";
+            var createDate=DateTimeHelper.NormalizeToMilliseconds(DateTime.UtcNow);
+            var transactionAmount = -amount;
+            var transactionData = $"{wallet.Id}|{transactionAmount}|{TransactionType.Withdraw}|{createDate}";
             var transactionHash = _hmacService.GenerateHmacHash(transactionData);
             await transactionRepository.AddTransactionAsync(new Transaction
             {
                 WalletId = wallet.Id,
-                Amount = -amount,
+                Amount = transactionAmount,
                 TransactionType = TransactionType.Withdraw,
                 CreatedDateTime = createDate,
                 TransactionHash = transactionHash
             });
 
             wallet.Balance -= amount;
-            wallet.LastUpdateDateTime = DateTime.UtcNow;
+            wallet.LastUpdateDateTime =DateTimeHelper.NormalizeToMilliseconds(DateTime.UtcNow);
             wallet.RowVersion = Guid.NewGuid();
+            wallet.WalletHash= _walletIntegrityService.GenerateWalletHash(wallet);
             await unitOfWork.SaveChangesAsync();
         }
 
@@ -82,7 +88,16 @@ namespace Credit_Wallet.Features.DeductFromWallet
                         Message = "Wallet not found",
                     };
                 }
-                if (wallet.Balance < request.Amount)
+                if(!_walletIntegrityService.VerifyWallet(wallet))
+                    {
+                        _logger.LogError($"Wallet integrity verification failed for userId {wallet.UserId},walletId {wallet.Id}", request.UserId,wallet.Id);
+                        return new DeductFromWalletResponse
+                        {
+                            Success = false,
+                            Message = "Unable to process the request!",
+                        };
+                    }
+                    if (wallet.Balance < request.Amount)
                 {
                     return new DeductFromWalletResponse
                     { 

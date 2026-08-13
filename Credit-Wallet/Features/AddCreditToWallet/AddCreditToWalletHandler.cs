@@ -15,22 +15,25 @@ namespace Credit_Wallet.Features.AddCreditToWallet
         private readonly ILogger<AddCreditToWalletHandler> _logger;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly HmacService _hmacService;
+        private readonly WalletIntegrityService _walletIntegrityService;
         public AddCreditToWalletHandler( AddCreditToWalletValidator validator,
                                         ILogger<AddCreditToWalletHandler> logger,
                                         IServiceScopeFactory serviceScopeFactory,
-                                        HmacService hmacService)
+                                        HmacService hmacService,
+                                        WalletIntegrityService walletIntegrityService)
         {
             _validator = validator;
             _logger = logger;
             _serviceScopeFactory = serviceScopeFactory;
             _hmacService = hmacService;
+            _walletIntegrityService = walletIntegrityService;
         }
         private async Task PerformAddAsync(Wallet wallet,
                                                     decimal amount,
                                                    ITransactionRepository transactionRepository,
                                                    IUnitOfWork unitOfWork)
         {
-            var createDate = DateTime.UtcNow;
+            var createDate = DateTimeHelper.NormalizeToMilliseconds(DateTime.UtcNow);
             var transactionData = $"{wallet.Id}|{amount}|{TransactionType.Deposit}|{createDate}";
             var transactionHash = _hmacService.GenerateHmacHash(transactionData);
             await  transactionRepository.AddTransactionAsync(new Transaction
@@ -42,8 +45,9 @@ namespace Credit_Wallet.Features.AddCreditToWallet
                 TransactionHash = transactionHash
             });
             wallet.Balance += amount;
-            wallet.LastUpdateDateTime = DateTime.UtcNow;
+            wallet.LastUpdateDateTime = DateTimeHelper.NormalizeToMilliseconds(DateTime.UtcNow);
             wallet.RowVersion = Guid.NewGuid();
+            wallet.WalletHash = _walletIntegrityService.GenerateWalletHash(wallet);
             await unitOfWork.SaveChangesAsync();
         }
         public async Task<AddCredittoWalletResponse> HandleAsync(AddCreditToWalletRequest request)
@@ -75,6 +79,15 @@ namespace Credit_Wallet.Features.AddCreditToWallet
                             Success = false,
                             Message = $"Wallet not found for this {request.UserId}",
 
+                        };
+                    }
+                    if (!_walletIntegrityService.VerifyWallet(wallet))
+                    {
+                        _logger.LogError($"Wallet integrity check failed for wallet ID: {wallet.Id},userId{wallet.UserId}"  ,wallet.Id, request.UserId);
+                        return new AddCredittoWalletResponse
+                        {
+                            Success = false,
+                            Message = "Unable to process the request!",
                         };
                     }
                     await PerformAddAsync(wallet, request.Amount, transactionRepository, unitOfWork);

@@ -11,10 +11,11 @@ namespace Credit_Wallet.Services
         {
             _hmacService = hmacService;
         }
-        public async Task<bool>VerifyTransactionAsync(Transaction transaction)
+        public bool VerifyTransaction(Transaction transaction)
         {
-            var data = $"{transaction.WalletId}:{Math.Abs(transaction.Amount)}:{transaction.TransactionType}{transaction.CreatedDateTime}";
+            var data = $"{transaction.WalletId}|{transaction.Amount}|{transaction.TransactionType}|{transaction.CreatedDateTime}";
             return _hmacService.VerifyHmacHash(data, transaction.TransactionHash);
         }
+       
     }
 }

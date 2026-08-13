@@ -1,4 +1,5 @@
-﻿using Credit_Wallet.Repositories;
+﻿using Credit_Wallet.Features.GetTransaction;
+using Credit_Wallet.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,16 +10,17 @@ namespace Credit_Wallet.Controllers
     [Route("api/transaction")]
     public class TransactionController : ControllerBase
     {
-        private readonly ITransactionRepository _transactionRepository;
-        public TransactionController(ITransactionRepository transactionRepository)
+        private readonly GetTransactionHandler _getTransactionHandler;
+        public TransactionController(GetTransactionHandler getTransactionHandler)
         {
-            _transactionRepository = transactionRepository;
+            _getTransactionHandler = getTransactionHandler;
         }
+            
 
-       /* [HttpGet("{transactionid}")]
-        public async Task<Transaction?> GetTransactionByIdAsync(int id)
+        [HttpGet("{transactionid}")]
+        public async Task<GetTransactionResponse> GetTransactionByIdAsync(int transactionid)
         {
-            await _transactionRepository.GetTransactionByIdAsync(id);
-        }*/
+          return  await _getTransactionHandler.HandleAsync(transactionid);
+        }
     }
 }
