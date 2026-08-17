@@ -7,5 +7,7 @@ namespace Credit_Wallet.Repositories
     {
          Task AddTransactionAsync(Transaction transaction);
         Task <Transaction?>GetTransactionByIdAsync(int id);
+
+        Task<IEnumerable<Transaction>> GetTransactionHistoryByWalletIdAsync(int walletID);
     }
 }

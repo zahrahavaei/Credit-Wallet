@@ -34,8 +34,10 @@ namespace Credit_Wallet.Features.AddCreditToWallet
                                                    IUnitOfWork unitOfWork)
         {
             var createDate = DateTimeHelper.NormalizeToMilliseconds(DateTime.UtcNow);
-            var transactionData = $"{wallet.Id}|{amount}|{TransactionType.Deposit}|{createDate}";
+            var transactionData = $"{wallet.Id}|{amount:F2}|{TransactionType.Deposit}|{createDate:O}";
             var transactionHash = _hmacService.GenerateHmacHash(transactionData);
+            Console.WriteLine("GENERATE transactionData: " + transactionData);
+            Console.WriteLine("GENERATE transactionHash: " + transactionHash);
             await  transactionRepository.AddTransactionAsync(new Transaction
             {
                 WalletId = wallet.Id,
@@ -44,7 +46,7 @@ namespace Credit_Wallet.Features.AddCreditToWallet
                 CreatedDateTime = createDate,
                 TransactionHash = transactionHash
             });
-            wallet.Balance += amount;
+            wallet.Deposit(amount);
             wallet.LastUpdateDateTime = DateTimeHelper.NormalizeToMilliseconds(DateTime.UtcNow);
             wallet.RowVersion = Guid.NewGuid();
             wallet.WalletHash = _walletIntegrityService.GenerateWalletHash(wallet);

@@ -2,6 +2,6 @@
 {
     public class GetTransactionRequest
     {
-        public int TransactionId { get; set; }
+        public int walletId { get; set; }
     }
 }

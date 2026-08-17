@@ -34,7 +34,6 @@ public class MakeWalletService : IMakeWalletService
         var newWallet = new Wallet
         {
             UserId = Guid.NewGuid().ToString(),
-            Balance = 0,
             LastUpdateDateTime = DateTimeHelper.NormalizeToMilliseconds(DateTime.UtcNow)
         };
         return newWallet;

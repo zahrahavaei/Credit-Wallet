@@ -40,7 +40,7 @@ namespace Credit_Wallet.Features.DeductFromWallet
         {
             var createDate=DateTimeHelper.NormalizeToMilliseconds(DateTime.UtcNow);
             var transactionAmount = -amount;
-            var transactionData = $"{wallet.Id}|{transactionAmount}|{TransactionType.Withdraw}|{createDate}";
+            var transactionData = $"{wallet.Id}|{transactionAmount:F2}|{TransactionType.Withdraw}|{createDate:O}";
             var transactionHash = _hmacService.GenerateHmacHash(transactionData);
             await transactionRepository.AddTransactionAsync(new Transaction
             {
@@ -51,7 +51,7 @@ namespace Credit_Wallet.Features.DeductFromWallet
                 TransactionHash = transactionHash
             });
 
-            wallet.Balance -= amount;
+            wallet.Withdraw(amount); 
             wallet.LastUpdateDateTime =DateTimeHelper.NormalizeToMilliseconds(DateTime.UtcNow);
             wallet.RowVersion = Guid.NewGuid();
             wallet.WalletHash= _walletIntegrityService.GenerateWalletHash(wallet);
@@ -103,6 +103,7 @@ namespace Credit_Wallet.Features.DeductFromWallet
                     { 
                         Success = false,
                         Message = "Insufficient funds",
+                        NewBalance = wallet.Balance
                     };
                 }
                     await PerformDeductionAsync(wallet,
@@ -140,6 +141,16 @@ namespace Credit_Wallet.Features.DeductFromWallet
                             Success = false,
                             Message = "Failed to deduct amount . Please try again.",
                         };
+                }
+                catch(InvalidOperationException ex)
+                {
+                    _logger.LogWarning(ex, "Insufficient funds for UserId: {UserId}", request.UserId);
+                    return new DeductFromWalletResponse
+                    {
+                        Success = false,
+                        Message = "Insufficient funds",
+                        NewBalance = Wallet.Balance
+                    };
                 }
                 catch (Exception ex)
                 {

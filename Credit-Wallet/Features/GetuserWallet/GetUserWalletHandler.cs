@@ -1,5 +1,6 @@
 ﻿using Credit_Wallet.Data;
 using Credit_Wallet.Repositories;
+using Credit_Wallet.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Credit_Wallet.Features.GetuserWallet
@@ -7,11 +8,14 @@ namespace Credit_Wallet.Features.GetuserWallet
     public class GetUserWalletHandler
     {
         private readonly IWalletRepository _walletRepository;
+        private readonly WalletIntegrityService _walletIntegrityService;
         private readonly ILogger<GetUserWalletHandler> _logger;
         public GetUserWalletHandler(IWalletRepository walletRepository, 
+                                   WalletIntegrityService walletIntegrityService,
                                      ILogger<GetUserWalletHandler> logger)
         {
             _walletRepository = walletRepository;
+            _walletIntegrityService = walletIntegrityService;
             _logger = logger;
         }
         public async Task<GetUserWalletResponse?> HandleAsync(string userId)
@@ -23,6 +27,11 @@ namespace Credit_Wallet.Features.GetuserWallet
 
                 return null;
                
+            }
+            if (!_walletIntegrityService.VerifyWallet(wallet)) 
+            {
+                _logger.LogWarning("Wallet integrity check failed for userId: {UserId}", userId);
+                return null;
             }
             return new GetUserWalletResponse
             {

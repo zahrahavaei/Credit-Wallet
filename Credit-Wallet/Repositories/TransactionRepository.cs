@@ -15,10 +15,17 @@ namespace Credit_Wallet.Repositories
         {
             await _dbContext.Transactions.AddAsync(transaction);
         }
+
         public async Task<Transaction?> GetTransactionByIdAsync(int id)
         {
             return await _dbContext.Transactions.FirstOrDefaultAsync(t => t.Id == id);
         }
 
+        public async Task<IEnumerable<Transaction>> GetTransactionHistoryByWalletIdAsync(int walletID)
+        {
+            var transactions = await _dbContext.Transactions.Where(t => t.WalletId == walletID).ToListAsync();
+           
+            return transactions;
+        }
     }
 }
