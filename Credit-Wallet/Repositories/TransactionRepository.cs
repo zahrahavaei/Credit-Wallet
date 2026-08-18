@@ -43,7 +43,7 @@ namespace Credit_Wallet.Repositories
             return transactions;
         }
         //................................................................
-        public async Task<IEnumerable<Transaction>> GetTransactionHistoryByUserIdAsync(string userId,
+        public async Task<TransactionHistoryResult> GetTransactionHistoryByUserIdAsync(string userId,
                                                                          GetTransactionHistoryByUserIdRequest request)
         {
             var query =  _dbContext.Transactions.Include(t => t.Wallet)
@@ -60,8 +60,28 @@ namespace Credit_Wallet.Repositories
                                                    DateTimeKind.Utc);
                 query = query.Where(t => t.CreatedDateTime <ToDate);
             }
-              var transactions = await query.ToListAsync();
-            return transactions;
+           
+
+            query = query.OrderByDescending(t => t.CreatedDateTime);
+
+            var totalCount = await query.CountAsync();
+
+            query =query.Skip((request.PageNumber - 1) * request.PageSize)
+                          .Take(request.PageSize);
+          
+          
+            var transactions = await query.ToListAsync();
+            return new TransactionHistoryResult
+            {
+                Transactions = transactions,
+                TotalCount = totalCount
+            };
+
+        }
+        public class TransactionHistoryResult
+        {
+            public IEnumerable<Transaction> Transactions { get; set; } = new List<Transaction>();
+            public int TotalCount { get; set; }
         }
     }
 }

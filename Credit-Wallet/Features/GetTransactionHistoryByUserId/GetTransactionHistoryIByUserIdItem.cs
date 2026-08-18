@@ -10,6 +10,7 @@ namespace Credit_Wallet.Features.GetTransactionHistoryByUserId
         public decimal Amount { get; set; }
         public TransactionType TransactionType { get; set; }
         public DateTime CreatedDateTime { get; set; }
+       
 
     }
 }

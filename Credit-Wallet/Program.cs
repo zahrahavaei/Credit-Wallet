@@ -45,6 +45,7 @@ builder.Services.AddScoped<TransactionIntegrityService>();
 builder.Services.AddScoped<GetTransactionHandler>();
 builder.Services.AddScoped<GetTransactionHistoryByWalletIdHandler>();
 builder.Services.AddScoped<GetTransactionHistoryByUserIdHandler>();
+builder.Services.AddScoped<GetTransactionHistoryByUserIdValidator>();
 
 var app = builder.Build();
 

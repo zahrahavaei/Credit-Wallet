@@ -1,6 +1,5 @@
 ﻿using Credit_Wallet.Repositories;
 using Credit_Wallet.Services;
-using System.Runtime.CompilerServices;
 
 namespace Credit_Wallet.Features.GetTransactionHistoryByUserId
 {
@@ -9,21 +8,39 @@ namespace Credit_Wallet.Features.GetTransactionHistoryByUserId
         private readonly ITransactionRepository _transactionRepository;
         private readonly ILogger<GetTransactionHistoryByUserIdHandler> _logger;
         private  readonly TransactionIntegrityService _transactionIntegrityService;
+
+        private readonly GetTransactionHistoryByUserIdValidator _validator;
         public GetTransactionHistoryByUserIdHandler(ITransactionRepository transactionRepository,
                                                     TransactionIntegrityService transactionIntegrityService,
-                                                    ILogger<GetTransactionHistoryByUserIdHandler> logger)
+                                                    ILogger<GetTransactionHistoryByUserIdHandler> logger,
+                                                    GetTransactionHistoryByUserIdValidator validator)
         {
             _transactionRepository = transactionRepository;
             _transactionIntegrityService = transactionIntegrityService;
             _logger = logger;
+            _validator = validator;
         }
         public async Task<GetTransactionHistoryByUserIdResponse> HandleTransactionHistoryAsync(string userId,
                                                                 GetTransactionHistoryByUserIdRequest request)
         {
-            var transaction = await _transactionRepository.GetTransactionHistoryByUserIdAsync(userId, request);
+            if(!_validator.Validate(userId, request, out string errorMessage))
+            {
+                return new GetTransactionHistoryByUserIdResponse
+                {
+                    Success = false,
+                    Message = errorMessage,
+                    Transactions = new List<GetTransactionHistoryByUserIdItem>(),
+                    PageSize = request.PageSize,
+                    PageNumber = request.PageNumber,
+                    TotalCount = 0,
+                    TotalPages = 0
+                };
+            }
+            var result = await _transactionRepository.GetTransactionHistoryByUserIdAsync(userId, request);
             var transactionItems= new List<GetTransactionHistoryByUserIdItem>();
             var integrityFailureOccurred = false;
-            foreach (var t in transaction)
+            var totalPages = (int)Math.Ceiling((double)result.TotalCount / request.PageSize);
+            foreach (var t in result.Transactions)
             {
                 if (_transactionIntegrityService.VerifyTransaction(t))
                 {
@@ -34,7 +51,8 @@ namespace Credit_Wallet.Features.GetTransactionHistoryByUserId
                         TransactionId = t.Id,
                         Amount = t.Amount,
                         TransactionType = t.TransactionType,
-                        CreatedDateTime = t.CreatedDateTime
+                        CreatedDateTime = t.CreatedDateTime,
+                      
                     });
                 }
                 else
@@ -49,7 +67,11 @@ namespace Credit_Wallet.Features.GetTransactionHistoryByUserId
                 {
                     Success = true,
                     Message = "Transaction history retrieved successfully.",
-                    Transactions = transactionItems
+                    Transactions = transactionItems,
+                    PageSize = request.PageSize,
+                    PageNumber = request.PageNumber,
+                    TotalCount = result.TotalCount,
+                    TotalPages = totalPages
                 };
             }
             else
@@ -58,7 +80,11 @@ namespace Credit_Wallet.Features.GetTransactionHistoryByUserId
                 {
                     Success = false,
                     Message = "Some transactions failed integrity check.",
-                    Transactions = transactionItems
+                    Transactions = transactionItems,
+                    PageSize = request.PageSize,
+                    PageNumber = request.PageNumber,
+                    TotalCount = result.TotalCount,
+                    TotalPages = totalPages
                 };
             }
         }

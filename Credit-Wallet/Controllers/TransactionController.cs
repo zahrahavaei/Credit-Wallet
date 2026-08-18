@@ -30,7 +30,7 @@ namespace Credit_Wallet.Controllers
           return  await _getTransactionHandler.HandleAsync(transactionid);
         }
         //...........................................................................................................
-        [HttpGet("history/wallet/{walletid}")]
+        [HttpGet("history/wallet/{walletId}")]
         public async Task<GetTransactionHistoryResponse> GetTransactionHistoryAsync(int walletid,
                                                           [FromQuery]GetTransactionHistoryByWalletIdRequest request)
         {
