@@ -1,27 +1,30 @@
 ﻿using Credit_Wallet.Repositories;
 using Credit_Wallet.Services;
 using Credit_Wallet.Data.Entities;
+using Credit_Wallet.Features.GetTransactionHistoryByWalletId;
 
 namespace Credit_Wallet.Features.GetTransactionHistory
 {
-    public class GetTransactionHistoryHandler
+    public class GetTransactionHistoryByWalletIdHandler
     {
         private readonly ITransactionRepository _transactionRepository;
         private readonly TransactionIntegrityService _transactionIntegrityService;
-        private readonly ILogger<GetTransactionHistoryHandler> _logger;
+        private readonly ILogger<GetTransactionHistoryByWalletIdHandler> _logger;
 
-        public GetTransactionHistoryHandler(ITransactionRepository transactionRepository,
+        public GetTransactionHistoryByWalletIdHandler(ITransactionRepository transactionRepository,
                                             TransactionIntegrityService transactionIntegrityService,
-                                            ILogger<GetTransactionHistoryHandler> logger)
+                                            ILogger<GetTransactionHistoryByWalletIdHandler> logger)
         {
             _transactionRepository = transactionRepository;
             _transactionIntegrityService = transactionIntegrityService;
             _logger = logger;
         }
 
-        public async Task<GetTransactionHistoryResponse> HandleTransactionHistoryAsync(int walletId)
+        public async Task<GetTransactionHistoryResponse> HandleTransactionHistoryAsync(int walletId,
+                                                             GetTransactionHistoryByWalletIdRequest request)
         {
-            var transactions = await _transactionRepository.GetTransactionHistoryByWalletIdAsync(walletId);
+            var transactions = await _transactionRepository.GetTransactionHistoryByWalletIdAsync(walletId, request);
+
             bool integrityFailureOccurred = false;
             var transactionItems = new List<GetTransactionHistoryItem>();
             foreach (var t in transactions)

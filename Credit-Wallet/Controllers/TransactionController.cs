@@ -1,7 +1,7 @@
 ﻿using Credit_Wallet.Features.GetTransaction;
 using Credit_Wallet.Features.GetTransactionHistory;
-using Credit_Wallet.Repositories;
-using Microsoft.AspNetCore.Http;
+using Credit_Wallet.Features.GetTransactionHistoryByUserId;
+using Credit_Wallet.Features.GetTransactionHistoryByWalletId;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Credit_Wallet.Controllers
@@ -12,12 +12,15 @@ namespace Credit_Wallet.Controllers
     public class TransactionController : ControllerBase
     {
         private readonly GetTransactionHandler _getTransactionHandler;
-        private readonly GetTransactionHistoryHandler _GetTransactionHistoryHandler;
+        private readonly GetTransactionHistoryByWalletIdHandler _getTransactionHistoryByWalletIdHandler;
+        private readonly GetTransactionHistoryByUserIdHandler _getTransactionHistoryByUserIdHandler;
         public TransactionController(GetTransactionHandler getTransactionHandler,
-                                     GetTransactionHistoryHandler getTransactionHistoryHandler)
+                                     GetTransactionHistoryByWalletIdHandler getTransactionHistoryHandler,
+                                     GetTransactionHistoryByUserIdHandler getTransactionHistoryByUserIdHandler)
         {
             _getTransactionHandler = getTransactionHandler;
-            _GetTransactionHistoryHandler = getTransactionHistoryHandler;
+            _getTransactionHistoryByWalletIdHandler = getTransactionHistoryHandler;
+            _getTransactionHistoryByUserIdHandler = getTransactionHistoryByUserIdHandler;
         }
             
 
@@ -26,12 +29,24 @@ namespace Credit_Wallet.Controllers
         {
           return  await _getTransactionHandler.HandleAsync(transactionid);
         }
-
-        [HttpGet("history/{walletid}")]
-        public async Task<GetTransactionHistoryResponse> GetTransactionHistoryAsync(int walletid)
+        //...........................................................................................................
+        [HttpGet("history/wallet/{walletid}")]
+        public async Task<GetTransactionHistoryResponse> GetTransactionHistoryAsync(int walletid,
+                                                          [FromQuery]GetTransactionHistoryByWalletIdRequest request)
         {
-           var response=   await _GetTransactionHistoryHandler.HandleTransactionHistoryAsync(walletid);
+           var response=   await _getTransactionHistoryByWalletIdHandler.HandleTransactionHistoryAsync(walletid,request);
+            return response;
+
+        }
+        //...........................................................................................................
+        [HttpGet("history/user/{userId}")]
+        public async Task <GetTransactionHistoryByUserIdResponse> GetTransactionHistoryByUserIdAsync(string userId,
+                                                                        [FromQuery]GetTransactionHistoryByUserIdRequest request)
+        {
+            var response = await _getTransactionHistoryByUserIdHandler.HandleTransactionHistoryAsync(userId,
+                                                                                                    request);
             return response;
         }
+        //...........................................................................................................
     }
 }

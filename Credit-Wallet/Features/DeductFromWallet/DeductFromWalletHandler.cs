@@ -149,7 +149,7 @@ namespace Credit_Wallet.Features.DeductFromWallet
                     {
                         Success = false,
                         Message = "Insufficient funds",
-                        NewBalance = Wallet.Balance
+                       
                     };
                 }
                 catch (Exception ex)
