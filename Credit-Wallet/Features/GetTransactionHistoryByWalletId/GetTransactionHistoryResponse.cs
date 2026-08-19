@@ -1,11 +1,12 @@
 ﻿using Credit_Wallet.Data.Entities;
+using Credit_Wallet.Enum;
 
 namespace Credit_Wallet.Features.GetTransactionHistory
 {
     public class GetTransactionHistoryResponse
     {
         public List<GetTransactionHistoryItem> Transactions { get; set; } = new();
-        public bool Success { get; set; }
+        public ResponseStatus Status { get; set; }
         public string Message { get; set; } = string.Empty;
 
         public int TotalCount { get; set; }

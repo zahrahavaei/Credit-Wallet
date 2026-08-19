@@ -39,9 +39,9 @@ namespace Credit_Wallet.Repositories
                                                    DateTimeKind.Utc);
                 query = query.Where(t => t.CreatedDateTime < ToDate);
             }
-            var totalCount = await query.CountAsync();
-
             query = query.OrderByDescending(t => t.CreatedDateTime);
+
+            var totalCount = await query.CountAsync();
 
             query =query.Skip((request.PageNumber - 1) * request.PageSize)
                         .Take(request.PageSize);

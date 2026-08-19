@@ -2,6 +2,7 @@
 using Credit_Wallet.Services;
 using Credit_Wallet.Data.Entities;
 using Credit_Wallet.Features.GetTransactionHistoryByWalletId;
+using Credit_Wallet.Enum;
 
 namespace Credit_Wallet.Features.GetTransactionHistory
 {
@@ -10,12 +11,12 @@ namespace Credit_Wallet.Features.GetTransactionHistory
         private readonly ITransactionRepository _transactionRepository;
         private readonly TransactionIntegrityService _transactionIntegrityService;
         private readonly ILogger<GetTransactionHistoryByWalletIdHandler> _logger;
-        private readonly GetTransactionHistooryByWalletIdValidator _validator;
+        private readonly GetTransactionHistoryByWalletIdValidator _validator;
 
         public GetTransactionHistoryByWalletIdHandler(ITransactionRepository transactionRepository,
                                             TransactionIntegrityService transactionIntegrityService,
                                             ILogger<GetTransactionHistoryByWalletIdHandler> logger,
-                                            GetTransactionHistooryByWalletIdValidator validator)
+                                            GetTransactionHistoryByWalletIdValidator validator)
         {
             _transactionRepository = transactionRepository;
             _transactionIntegrityService = transactionIntegrityService;
@@ -30,7 +31,7 @@ namespace Credit_Wallet.Features.GetTransactionHistory
             {
                 return new GetTransactionHistoryResponse
                 {
-                    Success = false,
+                   Status=ResponseStatus.InvalidRequest,
                     Message = errorMessage,
                     Transactions = new List<GetTransactionHistoryItem>(),
                     PageNumber = request.PageNumber,
@@ -40,6 +41,19 @@ namespace Credit_Wallet.Features.GetTransactionHistory
                 };
             }
             var result = await _transactionRepository.GetTransactionHistoryByWalletIdAsync(walletId, request);
+            if (result.TotalCount == 0)
+            {
+                return new GetTransactionHistoryResponse
+                {
+                   Status = ResponseStatus.NotFound,
+                    Message = "No transactions found for the specified wallet ID.",
+                    Transactions = new List<GetTransactionHistoryItem>(),
+                    PageNumber = request.PageNumber,
+                    PageSize = request.PageSize,
+                    TotalCount = 0,
+                    TotalPages = 0
+                };
+            }
 
             bool integrityFailureOccurred = false;
             var transactionItems = new List<GetTransactionHistoryItem>();
@@ -68,7 +82,7 @@ namespace Credit_Wallet.Features.GetTransactionHistory
                 return new GetTransactionHistoryResponse
                 {
                     Transactions = transactionItems,
-                    Success = true,
+                   Status = ResponseStatus.Success,
                     Message = "Transaction history retrieved successfully.",
                     PageNumber = request.PageNumber,
                     PageSize = request.PageSize,
@@ -79,7 +93,7 @@ namespace Credit_Wallet.Features.GetTransactionHistory
             return new GetTransactionHistoryResponse
             {
                 Transactions = transactionItems,
-                Success = false,
+               Status= ResponseStatus.IntegrityFailed,
                 Message = "Some transactions failed integrity check. Please contact support!",
                 PageNumber=request.PageNumber,
                 PageSize = request.PageSize,

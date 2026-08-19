@@ -1,8 +1,10 @@
-﻿using Credit_Wallet.Features.GetTransaction;
+﻿using Credit_Wallet.Enum;
+using Credit_Wallet.Features.GetTransaction;
 using Credit_Wallet.Features.GetTransactionHistory;
 using Credit_Wallet.Features.GetTransactionHistoryByUserId;
 using Credit_Wallet.Features.GetTransactionHistoryByWalletId;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Storage.Json;
 
 namespace Credit_Wallet.Controllers
 {
@@ -25,27 +27,62 @@ namespace Credit_Wallet.Controllers
             
 
         [HttpGet("{transactionid}")]
-        public async Task<GetTransactionResponse> GetTransactionByIdAsync(int transactionid)
+        public async Task<ActionResult<GetTransactionResponse>> GetTransactionByIdAsync(int transactionid)
         {
-          return  await _getTransactionHandler.HandleAsync(transactionid);
+          var response= await _getTransactionHandler.HandleAsync(transactionid);
+           switch(response.Status)
+            {
+                case ResponseStatus.Success:
+                    return Ok(response);
+                case ResponseStatus.IntegrityFailed:
+                    return StatusCode(StatusCodes.Status500InternalServerError, response);
+                case ResponseStatus.NotFound:
+                    return NotFound(response);
+                case ResponseStatus.InvalidRequest:
+                    return BadRequest(response);
+                default:
+                    return StatusCode(StatusCodes.Status500InternalServerError, response);
+            }
         }
         //...........................................................................................................
         [HttpGet("history/wallet/{walletId}")]
-        public async Task<GetTransactionHistoryResponse> GetTransactionHistoryAsync(int walletid,
+        public async Task<ActionResult<GetTransactionHistoryResponse>>GetTransactionHistoryAsync(int walletId,
                                                           [FromQuery]GetTransactionHistoryByWalletIdRequest request)
         {
-           var response=   await _getTransactionHistoryByWalletIdHandler.HandleTransactionHistoryAsync(walletid,request);
-            return response;
-
+           var response=   await _getTransactionHistoryByWalletIdHandler.HandleTransactionHistoryAsync(walletId, request);
+            switch (response.Status)
+            {
+                case ResponseStatus.Success:
+                    return Ok(response);
+                case ResponseStatus.NotFound:
+                    return NotFound(response);
+                case ResponseStatus.IntegrityFailed:
+                    return StatusCode(StatusCodes.Status500InternalServerError, response);
+                case ResponseStatus.InvalidRequest:
+                    return BadRequest(response);
+                default:
+                    return StatusCode(StatusCodes.Status500InternalServerError, response);
+            }
         }
         //...........................................................................................................
         [HttpGet("history/user/{userId}")]
-        public async Task <GetTransactionHistoryByUserIdResponse> GetTransactionHistoryByUserIdAsync(string userId,
+        public async Task <ActionResult<GetTransactionHistoryByUserIdResponse>> GetTransactionHistoryByUserIdAsync(string userId,
                                                                         [FromQuery]GetTransactionHistoryByUserIdRequest request)
         {
-            var response = await _getTransactionHistoryByUserIdHandler.HandleTransactionHistoryAsync(userId,
-                                                                                                    request);
-            return response;
+            var response = await _getTransactionHistoryByUserIdHandler.HandleTransactionHistoryAsync(userId, request);
+           switch(response.Status)
+            {
+                case ResponseStatus.Success:
+                    return Ok(response);
+                case ResponseStatus.NotFound:
+                    return NotFound(response);
+                case ResponseStatus.IntegrityFailed:
+                    return StatusCode(StatusCodes.Status500InternalServerError, response);
+                case ResponseStatus.InvalidRequest:
+                    return BadRequest(response);
+                default:
+                    return StatusCode(StatusCodes.Status500InternalServerError, response);
+            }
         }
         //...........................................................................................................
     }

@@ -1,4 +1,5 @@
-﻿using Credit_Wallet.Repositories;
+﻿using Credit_Wallet.Enum;
+using Credit_Wallet.Repositories;
 using Credit_Wallet.Services;
 
 namespace Credit_Wallet.Features.GetTransactionHistoryByUserId
@@ -27,7 +28,7 @@ namespace Credit_Wallet.Features.GetTransactionHistoryByUserId
             {
                 return new GetTransactionHistoryByUserIdResponse
                 {
-                    Success = false,
+                    Status=ResponseStatus.InvalidRequest,
                     Message = errorMessage,
                     Transactions = new List<GetTransactionHistoryByUserIdItem>(),
                     PageSize = request.PageSize,
@@ -37,6 +38,20 @@ namespace Credit_Wallet.Features.GetTransactionHistoryByUserId
                 };
             }
             var result = await _transactionRepository.GetTransactionHistoryByUserIdAsync(userId, request);
+            if (result.TotalCount == 0)
+            {
+                return new GetTransactionHistoryByUserIdResponse
+                {
+                    Status = ResponseStatus.NotFound,
+                    Message = "No Transaction Found For This UserId ${userID}",
+                    Transactions = new List<GetTransactionHistoryByUserIdItem>(),
+                    PageSize = request.PageSize,
+                    PageNumber = request.PageNumber,
+                    TotalCount = 0,
+                    TotalPages = 0
+
+                };
+            }
             var transactionItems= new List<GetTransactionHistoryByUserIdItem>();
             var integrityFailureOccurred = false;
             var totalPages = (int)Math.Ceiling((double)result.TotalCount / request.PageSize);
@@ -65,7 +80,7 @@ namespace Credit_Wallet.Features.GetTransactionHistoryByUserId
             {
                 return new GetTransactionHistoryByUserIdResponse
                 {
-                    Success = true,
+                    Status = ResponseStatus.Success,
                     Message = "Transaction history retrieved successfully.",
                     Transactions = transactionItems,
                     PageSize = request.PageSize,
@@ -78,7 +93,7 @@ namespace Credit_Wallet.Features.GetTransactionHistoryByUserId
             {
                 return new GetTransactionHistoryByUserIdResponse
                 {
-                    Success = false,
+                   Status= ResponseStatus.IntegrityFailed,
                     Message = "Some transactions failed integrity check.",
                     Transactions = transactionItems,
                     PageSize = request.PageSize,

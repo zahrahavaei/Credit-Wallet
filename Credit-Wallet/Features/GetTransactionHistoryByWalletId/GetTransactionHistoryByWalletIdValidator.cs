@@ -1,6 +1,6 @@
 ﻿namespace Credit_Wallet.Features.GetTransactionHistoryByWalletId
 {
-    public class GetTransactionHistooryByWalletIdValidator
+    public class GetTransactionHistoryByWalletIdValidator
     {
         public bool Validate(int walletId, GetTransactionHistoryByWalletIdRequest request, out string errorMessage)
         {

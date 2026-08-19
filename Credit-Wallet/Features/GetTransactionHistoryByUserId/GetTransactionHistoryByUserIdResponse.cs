@@ -1,8 +1,10 @@
-﻿namespace Credit_Wallet.Features.GetTransactionHistoryByUserId
+﻿using Credit_Wallet.Enum;
+
+namespace Credit_Wallet.Features.GetTransactionHistoryByUserId
 {
     public class GetTransactionHistoryByUserIdResponse
     {
-        public bool Success { get; set; }
+      public ResponseStatus Status { get; set; }
         public string Message { get; set; } = string.Empty;
         public List<GetTransactionHistoryByUserIdItem> Transactions { get; set; } = new();
 

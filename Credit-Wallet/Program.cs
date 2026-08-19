@@ -17,6 +17,7 @@ using Credit_Wallet.Services;
 using Credit_Wallet.Features.GetTransaction;
 using Credit_Wallet.Features.GetTransactionHistory;
 using Credit_Wallet.Features.GetTransactionHistoryByUserId;
+using Credit_Wallet.Features.GetTransactionHistoryByWalletId;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,6 +47,7 @@ builder.Services.AddScoped<GetTransactionHandler>();
 builder.Services.AddScoped<GetTransactionHistoryByWalletIdHandler>();
 builder.Services.AddScoped<GetTransactionHistoryByUserIdHandler>();
 builder.Services.AddScoped<GetTransactionHistoryByUserIdValidator>();
+builder.Services.AddScoped<GetTransactionHistoryByWalletIdValidator>();
 
 var app = builder.Build();
 

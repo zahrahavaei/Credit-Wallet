@@ -1,5 +1,6 @@
 ﻿using Credit_Wallet.Repositories;
 using Credit_Wallet.Services;
+using Credit_Wallet.Enum;
 
 namespace Credit_Wallet.Features.GetTransaction
 {
@@ -18,12 +19,20 @@ namespace Credit_Wallet.Features.GetTransaction
         }
         public async Task<GetTransactionResponse> HandleAsync(int transactionId)
         {
+            if (transactionId <= 0)
+            {
+                return new GetTransactionResponse
+                {
+                    Status = ResponseStatus.InvalidRequest,
+                    Message = "Invalid TransactionId"
+                };
+            }
             var fetchTransaction = await _transactionRepository.GetTransactionByIdAsync(transactionId);
             if (fetchTransaction == null)
             {
                 return new GetTransactionResponse
                 {
-                    Success = false,
+                   Status=ResponseStatus.NotFound,
                     Message = "Transaction not found"
                 };
             }
@@ -32,13 +41,13 @@ namespace Credit_Wallet.Features.GetTransaction
                 _logger.LogWarning("Transaction integrity check failed for transaction ID: {TransactionId}", transactionId);
                 return new GetTransactionResponse
                 {
-                    Success = false,
+                    Status=ResponseStatus.IntegrityFailed,
                     Message = "Transaction integrity check failed."
                 };
             }
             return new GetTransactionResponse
             {
-                Success = true,
+                Status = ResponseStatus.Success,
                 Message = "Transaction verified successfully.",
                 TransactionId = fetchTransaction.Id,
                 WalletId = fetchTransaction.WalletId,
