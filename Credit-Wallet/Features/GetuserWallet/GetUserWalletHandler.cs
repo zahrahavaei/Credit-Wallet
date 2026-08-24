@@ -18,7 +18,7 @@ namespace Credit_Wallet.Features.GetuserWallet
             _walletIntegrityService = walletIntegrityService;
             _logger = logger;
         }
-        public async Task<GetUserWalletResponse?> HandleAsync(string userId)
+        public async Task<GetUserWalletResponse?> HandleAsync(Guid userId)
         {
             var wallet = await _walletRepository.GetWalletByUserIdAsync(userId);
             if (wallet == null)

@@ -2,5 +2,5 @@
 
 public interface IMakeWalletService
 {
-    Task<int> HandleAsync();
+    Task<int> HandleAsync(Guid userId);
 }

@@ -18,6 +18,10 @@ using Credit_Wallet.Features.GetTransaction;
 using Credit_Wallet.Features.GetTransactionHistory;
 using Credit_Wallet.Features.GetTransactionHistoryByUserId;
 using Credit_Wallet.Features.GetTransactionHistoryByWalletId;
+using Credit_Wallet.Features.UserRegistration;
+using Microsoft.AspNetCore.Identity;
+using Credit_Wallet.Features.UserLogin;
+using Credit_Wallet.Controllers;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,6 +42,7 @@ builder.Services.AddScoped<DeductFromWalletValidator>();
 builder.Services.AddScoped<DeductFromWalletHandler>();
 builder.Services.AddScoped<IWalletRepository, WalletRepository>();
 builder.Services.AddScoped<ITransactionRepository, TransactionRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<GetUserWalletHandler>();
 builder.Services.AddScoped<HmacService>();
@@ -48,6 +53,10 @@ builder.Services.AddScoped<GetTransactionHistoryByWalletIdHandler>();
 builder.Services.AddScoped<GetTransactionHistoryByUserIdHandler>();
 builder.Services.AddScoped<GetTransactionHistoryByUserIdValidator>();
 builder.Services.AddScoped<GetTransactionHistoryByWalletIdValidator>();
+builder.Services.AddScoped<IPasswordHasher<User>,PasswordHasher<User>>();
+builder.Services.AddScoped<UserRegistrationHandler>();
+builder.Services.AddScoped<UserLoginHandler>();
+builder.Services.AddScoped<AuthController>();
 
 var app = builder.Build();
 

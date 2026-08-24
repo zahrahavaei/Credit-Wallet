@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Credit_Wallet.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260808145423_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260823191811_AddUserrRule")]
+    partial class AddUserrRule
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -57,6 +57,54 @@ namespace Credit_Wallet.Migrations
                     b.ToTable("Transactions");
                 });
 
+            modelBuilder.Entity("Credit_Wallet.Data.Entities.User", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedDateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("LastLogInDateTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("UserRole")
+                        .HasColumnType("integer");
+
+                    b.HasKey("UserId");
+
+                    b.ToTable("Users");
+                });
+
             modelBuilder.Entity("Credit_Wallet.Data.Entities.Wallet", b =>
                 {
                     b.Property<int>("Id")
@@ -76,15 +124,16 @@ namespace Credit_Wallet.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("WalletHash")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Wallets");
                 });
@@ -98,6 +147,22 @@ namespace Credit_Wallet.Migrations
                         .IsRequired();
 
                     b.Navigation("Wallet");
+                });
+
+            modelBuilder.Entity("Credit_Wallet.Data.Entities.Wallet", b =>
+                {
+                    b.HasOne("Credit_Wallet.Data.Entities.User", "User")
+                        .WithMany("Wallets")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Credit_Wallet.Data.Entities.User", b =>
+                {
+                    b.Navigation("Wallets");
                 });
 #pragma warning restore 612, 618
         }

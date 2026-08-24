@@ -21,7 +21,7 @@ namespace Credit_Wallet.Features.GetTransactionHistoryByUserId
             _logger = logger;
             _validator = validator;
         }
-        public async Task<GetTransactionHistoryByUserIdResponse> HandleTransactionHistoryAsync(string userId,
+        public async Task<GetTransactionHistoryByUserIdResponse> HandleTransactionHistoryAsync(Guid userId,
                                                                 GetTransactionHistoryByUserIdRequest request)
         {
             if(!_validator.Validate(userId, request, out string errorMessage))

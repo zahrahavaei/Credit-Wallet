@@ -5,6 +5,9 @@
         Success,
         InvalidRequest,
         IntegrityFailed,
+        PasswordVerificationFailed,
         NotFound,
+
+        Error
     }
 }

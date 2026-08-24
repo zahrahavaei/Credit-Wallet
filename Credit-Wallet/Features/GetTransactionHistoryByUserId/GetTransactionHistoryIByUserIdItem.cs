@@ -4,7 +4,7 @@ namespace Credit_Wallet.Features.GetTransactionHistoryByUserId
 {
     public class GetTransactionHistoryByUserIdItem
     {
-        public string UserId { get; set; } = string.Empty;
+        public Guid UserId { get; set; } 
         public int WalletId { get; set; }
         public int TransactionId { get; set; }
         public decimal Amount { get; set; }

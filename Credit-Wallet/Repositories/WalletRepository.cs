@@ -13,10 +13,10 @@ namespace Credit_Wallet.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<Wallet?> GetWalletByUserIdAsync(string userId)
+        public async Task<Wallet?> GetWalletByUserIdAsync(Guid userId)
         {
             return await _dbContext.Wallets
-                                         .FirstOrDefaultAsync(w => w.UserId == userId);
+                                         .FirstOrDefaultAsync(w => w.UserId== userId);
            
         }
         public async Task ReloadWalletAsync(Wallet wallet)

@@ -11,6 +11,7 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<Wallet> Wallets { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
+    public DbSet<User> Users { get; set; }
     
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -25,7 +26,18 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<Transaction>()
             .Property(t => t.Amount)
             .HasPrecision(18, 2);
-        
+
+        modelBuilder.Entity<Transaction>()
+            .HasOne(t => t.Wallet)
+            .WithMany()
+            .HasForeignKey(t => t.WalletId);
+
+        modelBuilder.Entity<Wallet>()
+       .HasOne(w => w.User)
+       .WithMany(u => u.Wallets)
+       .HasForeignKey(w => w.UserId)
+       .OnDelete(DeleteBehavior.Cascade);
+
 
         base.OnModelCreating(modelBuilder);
     }

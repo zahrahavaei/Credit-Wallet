@@ -14,7 +14,7 @@ namespace Credit_Wallet.Features.AddCreditToWallet
             {
                 return false;
             }
-            if(string.IsNullOrWhiteSpace(request.UserId))
+            if (request.UserId == Guid.Empty)
             {
                 return false;
             }

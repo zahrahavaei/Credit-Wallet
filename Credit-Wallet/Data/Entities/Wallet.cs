@@ -8,7 +8,9 @@ public class Wallet
     [Key]
     public int Id { get; set; }
     [Required]
-    public string UserId { get; set; }
+    public Guid UserId { get; set; }
+
+    public User User { get; set; }
     public decimal Balance { get; private set; } = 0;
     public DateTime LastUpdateDateTime { get; set; } = DateTime.UtcNow;
     /*[Timestamp]

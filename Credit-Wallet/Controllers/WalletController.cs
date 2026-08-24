@@ -26,10 +26,10 @@ public class WalletController : ControllerBase
         _getUserWalletHandler = getUserWalletHandler;
     }
 
-    [HttpPost("create")]
-    public async Task<IActionResult> CreateWallet()
+    [HttpPost("create/{userId}")]
+    public async Task<IActionResult> CreateWallet(Guid userId)
     {
-        var resultId = await _makeWalletService.HandleAsync();
+        var resultId = await _makeWalletService.HandleAsync(userId);
         
         return Ok(new {message = "Wallet created successfully",
                        walletId=resultId});
@@ -61,7 +61,7 @@ public class WalletController : ControllerBase
         }
     }
     [HttpGet("get-wallet/{userId}")]
-    public async Task<IActionResult> GetWalletAsync(string userId)
+    public async Task<IActionResult> GetWalletAsync(Guid userId)
     {
         var response = await _getUserWalletHandler.HandleAsync(userId);
         if (response == null)

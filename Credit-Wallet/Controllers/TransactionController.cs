@@ -66,7 +66,7 @@ namespace Credit_Wallet.Controllers
         }
         //...........................................................................................................
         [HttpGet("history/user/{userId}")]
-        public async Task <ActionResult<GetTransactionHistoryByUserIdResponse>> GetTransactionHistoryByUserIdAsync(string userId,
+        public async Task <ActionResult<GetTransactionHistoryByUserIdResponse>> GetTransactionHistoryByUserIdAsync(Guid userId,
                                                                         [FromQuery]GetTransactionHistoryByUserIdRequest request)
         {
             var response = await _getTransactionHistoryByUserIdHandler.HandleTransactionHistoryAsync(userId, request);

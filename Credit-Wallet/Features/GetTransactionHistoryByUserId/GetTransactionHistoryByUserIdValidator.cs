@@ -7,10 +7,10 @@
         {
             _logger = logger;
         }
-        public bool Validate(string userId, GetTransactionHistoryByUserIdRequest request, out string errorMessage)
+        public bool Validate(Guid userId, GetTransactionHistoryByUserIdRequest request, out string errorMessage)
         {
             errorMessage = string.Empty;
-            if (string.IsNullOrWhiteSpace(userId))
+            if (userId==Guid.Empty)
             {
                 errorMessage = "User ID is required.";
                 return false;

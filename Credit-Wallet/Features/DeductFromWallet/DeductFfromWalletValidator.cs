@@ -4,7 +4,7 @@
     {
         public bool Validate(DeductFromWalletRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.UserId))
+            if (request.UserId==Guid.Empty)
             {
                 return false;
             }

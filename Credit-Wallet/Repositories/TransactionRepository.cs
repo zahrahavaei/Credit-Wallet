@@ -55,7 +55,7 @@ namespace Credit_Wallet.Repositories
             };
         }
         //................................................................
-        public async Task<TransactionHistoryResult> GetTransactionHistoryByUserIdAsync(string userId,
+        public async Task<TransactionHistoryResult> GetTransactionHistoryByUserIdAsync(Guid userId,
                                                                          GetTransactionHistoryByUserIdRequest request)
         {
             var query =  _dbContext.Transactions.Include(t => t.Wallet)

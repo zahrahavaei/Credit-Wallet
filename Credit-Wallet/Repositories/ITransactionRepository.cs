@@ -13,7 +13,7 @@ namespace Credit_Wallet.Repositories
 
         Task<TransactionHistoryResult> GetTransactionHistoryByWalletIdAsync(int walletID,
                                                                         GetTransactionHistoryByWalletIdRequest request);
-        Task<TransactionHistoryResult> GetTransactionHistoryByUserIdAsync(string userId,
+        Task<TransactionHistoryResult> GetTransactionHistoryByUserIdAsync(Guid userId,
                                                                         GetTransactionHistoryByUserIdRequest request);
     }
 }

@@ -4,7 +4,7 @@ namespace Credit_Wallet.Repositories
 {
     public interface IWalletRepository
     {
-        Task<Wallet?> GetWalletByUserIdAsync(string userId);
+        Task<Wallet?> GetWalletByUserIdAsync(Guid userId);
         Task ReloadWalletAsync(Wallet wallet);
     }
 }

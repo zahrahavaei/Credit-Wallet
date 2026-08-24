@@ -16,9 +16,9 @@ public class MakeWalletService : IMakeWalletService
         _walletIntegrityService = walletIntegrityService;
     }
 
-    public async Task<int> HandleAsync()
+    public async Task<int> HandleAsync(Guid userId)
     {
-        var newWallet = CreateNewWallet();
+        var newWallet = CreateNewWallet(userId);
         
         _dbContext.Wallets.Add(newWallet);
          await _dbContext.SaveChangesAsync();
@@ -28,12 +28,12 @@ public class MakeWalletService : IMakeWalletService
         return newWallet.Id;
     }
 
-    private  Wallet CreateNewWallet()
+    private  Wallet CreateNewWallet(Guid userId)
     {
 
         var newWallet = new Wallet
         {
-            UserId = Guid.NewGuid().ToString(),
+            UserId = userId,
             LastUpdateDateTime = DateTimeHelper.NormalizeToMilliseconds(DateTime.UtcNow)
         };
         return newWallet;

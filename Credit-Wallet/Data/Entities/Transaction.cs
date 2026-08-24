@@ -8,7 +8,7 @@ public class Transaction
     [Key]
     public int Id { get; set; }
     public int WalletId { get; set; }
-    public Wallet? Wallet { get; set; }
+    public Wallet Wallet { get; set; } = null!;
     public decimal Amount { get; set; }
     public TransactionType TransactionType { get; set; }
    
