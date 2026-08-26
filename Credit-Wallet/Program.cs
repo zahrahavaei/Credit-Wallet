@@ -22,11 +22,19 @@ using Credit_Wallet.Features.UserRegistration;
 using Microsoft.AspNetCore.Identity;
 using Credit_Wallet.Features.UserLogin;
 using Credit_Wallet.Controllers;
+using System.Text.Json.Serialization;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(
+                        new JsonStringEnumConverter());
+                });
+                
+             
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 //builder.Services.AddOpenApi();
@@ -58,6 +66,16 @@ builder.Services.AddScoped<UserRegistrationHandler>();
 builder.Services.AddScoped<UserLoginHandler>();
 builder.Services.AddScoped<AuthController>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("ReactApp", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+        .AllowAnyHeader()
+        .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -68,6 +86,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("ReactApp");
 
 app.UseAuthorization();
 app.MapControllers();
