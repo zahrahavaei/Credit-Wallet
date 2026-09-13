@@ -1,10 +1,11 @@
 import { useState ,useContext} from "react"
 import {useNavigate} from "react-router-dom"
-import {SaveToken}  from "../Services/TokenServices"
+import { AuthContext } from "../Context/AuthContext";
 
 const Login=()=>{
    
     const navigate=useNavigate();
+    const{userData,setUserData}=useContext(AuthContext);
     const[userName,setUserName]=useState();
     const[password,setPassword]=useState();
     const[message,setMessage]=useState();
@@ -18,6 +19,7 @@ const Login=()=>{
                 headers:{
                     "content-type":"application/json",
                 },
+                credentials:"include",
                 body:JSON.stringify
                 ({
                     userName:userName,
@@ -26,17 +28,16 @@ const Login=()=>{
             });
             if (rsp.ok){
                 const result=await rsp.json();
-                const token=result.token;
-                const userData={
+                const userDataInfo={
                     userName:result.userName,
                     userRole:result.userRole,
                     firstName:result.firstName,
                     lastName:result.lastName
                 }
-                console.log("token",token);
+                 setMessage(result.message);
                 console.log("userData",userData);
-                SaveToken({token,userData});
-                if(userData.userRole=="Admin")
+                setUserData(userDataInfo);
+                if(userDataInfo.userRole=="Admin")
                 {
                     navigate("/adminDashboard");
                 }

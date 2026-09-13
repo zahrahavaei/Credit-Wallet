@@ -2,5 +2,5 @@
 
 public interface IMakeWalletService
 {
-    Task<int> HandleAsync(Guid userId);
+    Task<MakeWalletResponse> HandleAsync(Guid userId);
 }

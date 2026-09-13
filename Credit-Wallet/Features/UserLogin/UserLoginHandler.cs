@@ -67,7 +67,7 @@ $"{userfetched.UserId}|{userfetched.UserName}|{userfetched.Email}|{userfetched.F
                     UserName = request.UserName,
                     FirstName = userfetched.FirstName,
                     LastName = userfetched.LastName,
-                    UserRole= userfetched.UserRole
+                    UserRole = userfetched.UserRole
                 };
             }
 
@@ -84,14 +84,13 @@ $"{userfetched.UserId}|{userfetched.UserName}|{userfetched.Email}|{userfetched.F
                     UserRole = userfetched.UserRole
                 };
             }
-           
-           
+
+
             return new UserloginResponse
             {
                 Status = Enum.ResponseStatus.Error,
                 Message = $"Error  !",
             };
         }
-
     }
 }

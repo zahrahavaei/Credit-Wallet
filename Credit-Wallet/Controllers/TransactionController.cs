@@ -3,12 +3,13 @@ using Credit_Wallet.Features.GetTransaction;
 using Credit_Wallet.Features.GetTransactionHistory;
 using Credit_Wallet.Features.GetTransactionHistoryByUserId;
 using Credit_Wallet.Features.GetTransactionHistoryByWalletId;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Storage.Json;
 
 namespace Credit_Wallet.Controllers
 {
-    
+    [Authorize]
     [ApiController]
     [Route("api/transaction")]
     public class TransactionController : ControllerBase
@@ -47,7 +48,7 @@ namespace Credit_Wallet.Controllers
         //...........................................................................................................
         [HttpGet("history/wallet/{walletId}")]
         public async Task<ActionResult<GetTransactionHistoryResponse>>GetTransactionHistoryAsync(int walletId,
-                                                          [FromQuery]GetTransactionHistoryByWalletIdRequest request)
+                                                     [FromQuery]GetTransactionHistoryByWalletIdRequest request)
         {
            var response=   await _getTransactionHistoryByWalletIdHandler.HandleTransactionHistoryAsync(walletId, request);
             switch (response.Status)

@@ -23,7 +23,9 @@ using Microsoft.AspNetCore.Identity;
 using Credit_Wallet.Features.UserLogin;
 using Credit_Wallet.Controllers;
 using System.Text.Json.Serialization;
-
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +43,33 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+var jwtKey = builder.Configuration["Jwt:Key"];
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            context.Token = context.Request.Cookies["accessToken"];
+                            return Task.CompletedTask;
+                        }
+                    };
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(jwtKey!)),
+                        ValidateIssuer = true,
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                        ValidateAudience = true,
+                        ValidAudience = builder.Configuration["Jwt:Audience"],
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero
+                    };
+                });
+                  
 
 
 builder.Services.AddScoped<IMakeWalletService, MakeWalletService>();
@@ -72,7 +101,8 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins("http://localhost:5173")
         .AllowAnyHeader()
-        .AllowAnyMethod();
+        .AllowAnyMethod()
+        .AllowCredentials();
     });
 });
 
@@ -89,6 +119,7 @@ app.UseHttpsRedirection();
 
 app.UseCors("ReactApp");
 
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

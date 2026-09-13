@@ -38,8 +38,10 @@ namespace Credit_Wallet.Controllers
             { 
                 case  ResponseStatus.Success:
                     return Ok(response);
-                case ResponseStatus.Error:
+                case ResponseStatus.InvalidRequest:
                     return BadRequest(response);
+                case ResponseStatus.Error:
+                    return StatusCode(StatusCodes.Status500InternalServerError, response);
                 default:
                     return BadRequest(response);
             }
@@ -55,7 +57,14 @@ namespace Credit_Wallet.Controllers
                                          response.UserName,
                                          response.UserRole,
                                          response.UserId);
-                response.Token = token;
+                // response.Token = token;
+                Response.Cookies.Append("accessToken", token, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite=SameSiteMode.Strict,
+                    Expires=DateTimeOffset.UtcNow.AddMinutes(60)
+                });
             }
             switch (response.Status)
             {

@@ -2,10 +2,12 @@
 using Credit_Wallet.Features.DeductFromWallet;
 using Credit_Wallet.Features.GetuserWallet;
 using Credit_Wallet.Features.MakeWallet;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Credit_Wallet.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/wallet")]
 public class WalletController : ControllerBase
@@ -29,10 +31,20 @@ public class WalletController : ControllerBase
     [HttpPost("create/{userId}")]
     public async Task<IActionResult> CreateWallet(Guid userId)
     {
-        var resultId = await _makeWalletService.HandleAsync(userId);
         
-        return Ok(new {message = "Wallet created successfully",
-                       walletId=resultId});
+        var result= await _makeWalletService.HandleAsync(userId);
+
+        switch (result.Status)
+        {
+            case Enum.ResponseStatus.Success:
+                return Ok(result);
+            case Enum.ResponseStatus.InvalidRequest:
+                return BadRequest(result);
+            case Enum.ResponseStatus.Error:
+                return StatusCode(500, result);
+            default:
+                return StatusCode(500, result);
+        }
     }
     [HttpPost("add-credit")]
     public async Task<IActionResult> AddCreditAsync([FromBody] AddCreditToWalletRequest request)

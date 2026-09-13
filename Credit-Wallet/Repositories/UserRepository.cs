@@ -22,7 +22,7 @@ namespace Credit_Wallet.Repositories
             _dbContext = dbContext;
            _logger = logger;
         }
-        public async Task<int> AddUserAsync(User user )
+        public async Task<int> AddUserAsync(User user)
         {
             try
             {
@@ -32,12 +32,12 @@ namespace Credit_Wallet.Repositories
             }
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex,"Error occured while adding user to database");
+                _logger.LogError(ex, "Error occured while adding user to database");
                 return 0;
             }
             catch (Exception ex)
             {
-                _logger.LogError( ex, "Unexpected error while adding user {UserName}",  user.UserName);
+                _logger.LogError(ex, "Unexpected error while adding user {UserName}", user.UserName);
                 return 0;
             }
         }

@@ -1,42 +1,59 @@
 ﻿using Credit_Wallet.Data;
 using Credit_Wallet.Data.Entities;
+using Credit_Wallet.Enum;
+using Credit_Wallet.Repositories;
 using Credit_Wallet.Services;
 
 namespace Credit_Wallet.Features.MakeWallet;
 
 public class MakeWalletService : IMakeWalletService
 {
-    private readonly ApplicationDbContext _dbContext;
     private readonly WalletIntegrityService _walletIntegrityService;
+    private readonly WalletRepository _walletRepository;
 
-    public MakeWalletService(ApplicationDbContext dbContext,
-                             WalletIntegrityService walletIntegrityService)
+    public MakeWalletService(  WalletIntegrityService walletIntegrityService,
+                             WalletRepository walletRepository)
     {
-        _dbContext = dbContext;
         _walletIntegrityService = walletIntegrityService;
+        _walletRepository = walletRepository;
     }
 
-    public async Task<int> HandleAsync(Guid userId)
+    public async Task<MakeWalletResponse> HandleAsync(Guid userId)
     {
-        var newWallet = CreateNewWallet(userId);
-        
-        _dbContext.Wallets.Add(newWallet);
-         await _dbContext.SaveChangesAsync();
        
-        newWallet.WalletHash = _walletIntegrityService.GenerateWalletHash(newWallet);
-        await _dbContext.SaveChangesAsync();
-        return newWallet.Id;
-    }
-
-    private  Wallet CreateNewWallet(Guid userId)
-    {
-
-        var newWallet = new Wallet
+        var existingWallet = await _walletRepository.GetWalletByUserIdAsync(userId);
+        if (existingWallet != null)
         {
-            UserId = userId,
-            LastUpdateDateTime = DateTimeHelper.NormalizeToMilliseconds(DateTime.UtcNow)
-        };
-        return newWallet;
+            return new MakeWalletResponse
+            {
+                Status = ResponseStatus.InvalidRequest,
+                Message = "Wallet already exists for this user."
+            };
+        }
+        try
+        {
+            var newWallet = await _walletRepository.MakeWalletAsync(userId);
+
+
+            newWallet.WalletHash = _walletIntegrityService.GenerateWalletHash(newWallet);
+            await _walletRepository.SaveWalletAsync();
+            return new MakeWalletResponse
+            {
+                Status = ResponseStatus.Success,
+                Message = "Wallet created successfully.",
+                WalletId = newWallet.Id
+            };
+        }
+        catch (Exception ex)
+        {
+            return new MakeWalletResponse
+            {
+                Status = ResponseStatus.Error,
+                Message = $"An error occurred while creating the wallet"
+            };
+        }
     }
+
+   
     
 }

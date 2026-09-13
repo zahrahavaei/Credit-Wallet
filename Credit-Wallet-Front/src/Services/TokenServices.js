@@ -1,18 +1,14 @@
 
-const SaveToken=(token,userData)=>{
-    localStorage.setItem("token",token);
-    localStorage.setItem("userData",userData);
+const SaveToken=(userData)=>{
+    localStorage.setItem("userData",JSON.stringify(userData));
 }
-const GetToken=()=>{
-    const token=localStorage.getItem("token");
-    return token;
-}
+
 const GetUserData=()=>{
     const data=localStorage.getItem("userData");
     if (!data){
         return null;
     }
-    return data;
+    return  JSON.parse(data) ;
     }
-export {SaveToken,GetToken,GetUserData};
+export {SaveToken,GetUserData};
 

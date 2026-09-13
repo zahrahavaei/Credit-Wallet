@@ -23,7 +23,7 @@ namespace Credit_Wallet.Features.UserRegistration
             _passwordHasher=passwordHasher;
             _userRepository=userRepository;
         }
-        public async Task <UserRegisterationResponse> RegisterUserAsync(UserRegistrationRequest request)                                 
+        public async Task<UserRegisterationResponse> RegisterUserAsync(UserRegistrationRequest request)
         {
             var userFetched = await _userRepository.GetUserByUserNameAsync(request.Email);
             if (userFetched != null)
@@ -39,10 +39,11 @@ namespace Credit_Wallet.Features.UserRegistration
             user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
             var data =
      $"{user.UserId}|{user.UserName}|{user.Email}|{user.FirstName}|{user.LastName}|{user.PhoneNumber}|{user.PasswordHash}";
-            user.UserHash=_hmacService.GenerateHmacHash(data);
+            user.UserHash = _hmacService.GenerateHmacHash(data);
 
             var result = await _userRepository.AddUserAsync(user);
-            if (result > 0) {
+            if (result > 0)
+            {
                 return new UserRegisterationResponse
                 {
                     Status = ResponseStatus.Success,
@@ -54,7 +55,7 @@ namespace Credit_Wallet.Features.UserRegistration
                     PhoneNumber = user.PhoneNumber,
                     Email = user.Email,
                 };
-                }
+            }
             else
             {
                 return new UserRegisterationResponse
@@ -63,22 +64,22 @@ namespace Credit_Wallet.Features.UserRegistration
                     Message = $" User  Registeration Failed !",
                 };
             }
-           
+
         }
-        private User CreateNewUser(UserRegistrationRequest request )
+        private User CreateNewUser(UserRegistrationRequest request)
         {
             var user = new User
             {
-                
+
                 UserId = Guid.NewGuid(),
                 CreatedDateTime = DateTime.UtcNow,
                 LastLogInDateTime = DateTime.UtcNow,
                 Email = request.Email,
                 FirstName = request.FirstName,
                 LastName = request.LastName,
-                UserName= request.Email,
+                UserName = request.Email,
                 PhoneNumber = request.PhoneNumber,
-                
+
 
             };
             return user;
